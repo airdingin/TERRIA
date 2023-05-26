@@ -1,39 +1,83 @@
-# Terria Map
+## TerriaJS-Server
 
-[![Build Status](https://github.com/TerriaJS/TerriaMap/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/TerriaJS/TerriaMap/actions/workflows/ci.yml) [![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://docs.terria.io/)
+[![Greenkeeper badge](https://badges.greenkeeper.io/TerriaJS/terriajs-server.svg)](https://greenkeeper.io/)
 
-![Terria logo](terria-logo.png "Terria logo")
+[![Build Status](https://travis-ci.org/TerriaJS/terriajs-server.svg?branch=master)](https://travis-ci.org/TerriaJS/terriajs-server)
 
-This is a complete website built using the TerriaJS library. See the [TerriaJS README](https://github.com/TerriaJS/TerriaJS) for information about TerriaJS, and getting started using this repository.
+--------------------
 
-For instructions on how to deploy your map, see [the documentation here](doc/deploying/deploying-to-aws.md).
+**We have just released a brand new version of Terria &mdash; verson 8!**
 
----
+We've put together a list of things we've removed from version 8 and some steps to help you migrate to the new version in our [migration guide](https://docs.terria.io/guide/contributing/migration-guide/)
 
-### We have released TerriaJS v8.3.0 (2023-05-22)
+**Not ready to move to version 8 yet? You can find terriajs version 7 here:** https://github.com/TerriaJS/terriajs/tree/terriajs7
 
-Terriajs version `8.3.0` includes a few breaking changes:
+--------------------
 
-    - Upgrade to Typescript version 4.9.x
-    - Upgrade to Mobx version 6.9.x
+This is a basic NodeJS Express server that serves up a (not included) static [TerriaJS](https://github.com/TerriaJS/TerriaJS)-based site (such as [National Map](http://nationalmap.gov.au)) with a few additional useful services:
 
-This might affect your map only if it has local model layer modifications like your own custom data provider (aka catalog items). Otherwise you can proceed like any other normal upgrade. For instructions on upgrading your maps with local modiciations please refer to the [upgrade guide](https://github.com/TerriaJS/terriajs/discussions/6787).
+* `/api/v1/proxy`: a proxy service which applies CORS headers for data providers that lack them. Add URLs to config.json to enable them.
+* `/api/v1/proj4def`: a proj4 coordinate reference system lookup service.
+* `/api/v1/proxyabledomains`: return a JSON of domains the server is willing to proxy for
+* `/api/v1/ping`: returns 200 OK.
+* `/api/v1/share/X-Y` (GET): uses prefix X to resolve key Y against some configured JSON storage provider (Gist and AWS S3 implemented)
+* `/api/v1/share` (POST): stores a piece of JSON with a configured storage provider (Gist implemented)
+* `/api/v1/serverconfig`: retrieve (safe) information about how the server is configured.
+* All other requests are served from the `wwwroot` directory you provide on the command line, which defaults to `./wwwroot`
+* If files `[wwwroot]/404.html` and/or `[wwwroot]/500.html` exist, they will be served for those HTTP error codes.
+* Supports very simple authentication via a single username/password included in requests using HTTP basic authentication.
+* Proxied services that require HTTP authentication can be proxied by adding credentials to a `proxyauth.json` file.
+* It can be run in HTTPS mode, although there are better ways of doing that in production.
 
-### PM2 no longer supported (2023-03-21)
+Generally, you don't want to manually install TerriaJS-Server. It comes installed with TerriaMap (see below).
 
-We've removed pm2 from our dependencies and no longer ship configuration for running terriajs-server with pm2.
+### Stand-alone installation (without serving TerriaMap)
 
-`npm start` now runs in forground because it no longer uses pm2. A new task `gulp dev` has been introduced to make development easier. It runs terriajs-server and starts `gulp watch` - which watches for changes and incrementally builds. See https://github.com/TerriaJS/terriajs/discussions/6731 for more information on why and what to do.
+#### Install
 
-### We just reformatted our codebase with [Prettier](https://prettier.io/) (2022-08-29)
+1. `git clone https://github.com/terriajs/terriajs-server`
+2. `cd terriajs-server`
+3. `npm install`
 
-This may cause large merge conflicts when you merge `main` into your fork. See https://github.com/TerriaJS/terriajs/discussions/6517 for instructions on how to merge this formatting change.
+#### Configure
 
-### We have released TerriaJS v8 (2021-08-13)
+Copy `serverconfig.json.example` to `serverconfig.json` and configure as needed. See comments inside that file. (Comments are allowed; see json5.org).
 
-What this means:
+If you want to proxy authenticated layers, do the same for `proxyauth.json.example`.
 
-- [Our new main branch of TerriaMap](https://github.com/TerriaJS/TerriaMap/tree/main) now uses v8+ of TerriaJS
-- [The terriajs7 branch of TerriaMap](https://github.com/TerriaJS/TerriaMap/tree/terriajs7) will use v7 TerriaJS, but will not receive further updates
-- We have a [migration guide](https://docs.terria.io/guide/contributing/migration-guide/) available for users of TerriaJS v7 to help them upgrade their applications to TerriaJS v8
-- Please chat to us and the community in our [GitHub discussions forum](https://github.com/TerriaJS/terriajs/discussions)
+#### Run
+
+1. `npm start -- [options] [path/to/wwwroot]`
+
+```
+terriajs-server.js [options] [path/to/wwwroot]
+
+Options:
+  --help, -h     Show this help.                                       [boolean]
+  --version      Show version number                                   [boolean]
+  --port         Port to listen on.                [default: 3001]      [number]
+  --public       Run a public server that listens on all interfaces.
+                                                       [boolean] [default: true]
+  --config-file  File containing settings such as allowed domains to proxy. See
+                 serverconfig.json.example
+  --proxy-auth   File containing auth information for proxied domains. See
+                 proxyauth.json.example
+  --verbose      Produce more output and logging.     [boolean] [default: false]
+```
+
+For example, to run with port 3009:
+
+`npm start -- --port 3009`
+
+To run the server in the foreground, you can do this:
+
+`node . [arguments as above]`
+
+#### Tests
+
+1. Run `npm test`
+
+### Installation with TerriaMap
+
+Just [install TerriaMap](http://terria.io/Documentation). TerriaJS-Server is installed to `node_modules/terriajs-server`, and you can run it manually as `node_modules/terriajs-server ./wwwroot`.
+

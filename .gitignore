@@ -1,29 +1,22 @@
-node_modules/
-.idea/
-wwwroot/build/
-wwwroot/doc/
-wwwroot/index.html
-npm-debug.log
-version.js
-version.json
-wwwroot/init/nm.json
-datasources/00_National_Data_Sets.json
-.DS_Store
-.localized
-.sass-cache
-/terriajs.pid
-/terriajs-server.log
+# https://marketplace.visualstudio.com/items?itemName=xyz.local-history
+.history/
 
-/wwwroot/editor/
+# added by GitSavvy
 /error.log
-/error.log
+
+# added by GitSavvy
+/node_modules/
+
+# added by GitSavvy
 /output.log
-privateserverconfig.json
-wwwroot/privateconfig.json
-deploy/packages/
-deploy/work/
-packages/
-pancake/
-yarn-error.log
 
+# added by GitSavvy
+/wwwroot
+
+# added by GitSavvy
+/npm-debug.log
+
+# don't lock libs
 package-lock.json
+
+terriajs.pid
